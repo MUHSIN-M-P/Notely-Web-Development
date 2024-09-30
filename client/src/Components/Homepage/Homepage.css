@@ -1,0 +1,120 @@
+.main-content {
+  animation: ease-in 0.3s appear;
+}
+
+@keyframes appear {
+  0% {
+    transform: translateX(-15px);
+    opacity: 0;
+  }
+  70% {
+    opacity: 0.3;
+  }
+  100% {
+    transform: translateX(0px);
+    opacity: 1;
+  }
+}
+
+.new-note-section {
+  background-color: white;
+  padding: 0.8rem 1.25rem;
+  font-size: 1rem;
+  display: flex;
+  border-radius: 10px;
+  height: fit-content;
+  margin: 1rem;
+  margin-left: 292px;
+  width: calc(93vw - 260px);
+}
+
+@media (max-width:1000px) {
+  .new-note-section{
+    margin: 1rem;
+    padding: .75rem;
+    overflow-x: hidden;
+    width: 84vw !important;
+  }
+
+  .notes-list{
+    width: fit-content !important;
+  }
+  .notes-section {
+    width: fit-content !important; 
+    text-wrap: nowrap;
+    margin: 1rem !important;
+  }
+
+  .main-content{
+    width: 100%;
+  }
+}
+
+.new-note-section div {
+  display: flex;
+  opacity: 0.6;
+  text-wrap: nowrap;
+}
+
+.new-note-section div:hover {
+  opacity: 1;
+}
+.new-note-section img {
+  object-fit: contain;
+  margin-right: 0.5rem;
+}
+
+.notes-section {
+  width: calc(93vw - 260px);
+  min-height: calc(100vh - 76px);
+  margin: 1rem;
+  background-color: white;
+  border-radius: 15px;
+  padding: 1.5rem;
+  margin-left: 292px;
+}
+
+.notes-section h1 {
+  margin: 0px;
+  font-family: "Jost", sans-serif;
+  font-weight: 400;
+}
+
+.categories {
+  display: flex;
+  font-weight: 700;
+  font-size: 1rem;
+  color: gray;
+  width: fit-content;
+  height: fit-content;
+}
+
+.categories p {
+  margin-right: 1.5rem;
+  font-family: "Roboto", system-ui;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid transparent;
+  transition: border-bottom 0.3s ease;
+}
+.categories p:hover {
+  color: black;
+  border-bottom: solid 1px black;
+}
+
+.categories p.selected-cat{
+  color: black;
+  border-bottom: solid 1px black;
+}
+
+.notes-list{
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 2rem;
+
+}
+
+@media (max-width:1000px) {
+  .notes-list{
+    gap: 1rem;
+  }
+}

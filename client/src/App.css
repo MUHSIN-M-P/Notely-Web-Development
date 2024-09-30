@@ -1,0 +1,30 @@
+.App{
+  font-family: sans-serif;
+  margin: 0px;
+  padding: 0px;
+  width: 100vw;
+  display: flex;
+}
+
+.loading-container{
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 5;
+}
+.loader{
+  width: 75px;
+
+  height: 75px;
+  border:  1em solid rgb(213, 212, 212);
+  border-radius: 50%;
+  border-top: 1em solid rgb(0, 0, 0);
+  animation: spin 1.5s infinite;
+  /* add linear for smooth and continues */
+}
+@keyframes spin{
+  100%{
+      transform: rotate(360deg);
+  }
+}

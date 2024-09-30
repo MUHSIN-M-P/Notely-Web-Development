@@ -1,0 +1,209 @@
+.note {
+  box-sizing: border-box;
+  position: relative;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+  background-color: white;
+  overflow: hidden;
+  min-width: 300px ;
+  
+  height: 250px !important;
+  -webkit-box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.1);
+  -moz-box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.1);
+  box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.1);
+  transition: background-color ease-in 0.3s;
+}
+
+@media (max-width:600px) {
+  .note{
+    max-width: 335px !important;
+  }
+}
+
+.note:hover {
+  background-color: var(--hover-bg-color);
+  border-radius: 10px;
+}
+
+.note:hover .content{
+  color: var(--hover-color);
+}
+.note:hover .updated-date{
+  color: var(--hover-color);
+}
+
+.footer-bar {
+  position: absolute;
+  top: 98.5%;
+  width: 100%;
+  height: 4px;
+  border-radius: 8px;
+  transition: transform 0.3s ease;
+}
+
+.note:hover .footer-bar {
+  transform: translateY(-15px);
+}
+
+.date{
+        display: flex;
+        align-items: center;
+}
+
+.note:hover .date{
+        color: white;
+}
+
+.date img{
+        object-fit: contain;
+        margin-right: .5rem;
+        width: 15px;
+}
+.date p{
+        margin: 0;
+        text-wrap: nowrap;
+        font-size: small;
+        font-weight: 600;
+        font-family: 'Roboto';
+}
+
+.option .container{
+  display: flex;
+  align-items: center;
+}
+
+.container img{
+        width: 20px;
+        height: 20px;
+        object-fit: contain;
+}
+
+.note-options {
+  display: none;
+  position: absolute;
+  right: 0;
+  background-color: white;
+  z-index: 2;
+        color: black;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.175);
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  padding: 0.4rem 0rem;
+  width: 100px;
+  opacity: 0;
+  max-height: 0;
+  overflow: hidden;
+  transform: translateY(-5px);
+  transition: opacity 0.3s ease, max-height 0.3s ease, transform 0.3s ease;
+}
+
+.note-options div {
+  display: flex;
+  font-family: "Roboto", sans-serif;
+  margin-bottom: 0.2rem;
+  padding: 0.4rem 0.8rem;
+}
+
+.note-options div:hover {
+  background-color: #f5f4f4;
+}
+
+.note-options p {
+  margin: 0px;
+}
+
+.note-options img {
+  object-fit: contain;
+  margin-right: 0.3rem;
+  cursor: pointer;
+}
+
+.note-options.show {
+  display: block;
+  opacity: 1;
+  transform: translateY(5px);
+  max-height: fit-content;
+}
+
+.header {
+  display: flex;
+  padding: 1rem 1rem 0rem;
+  margin-bottom: .5rem;
+  justify-content: space-between;
+}
+
+.pin {
+  margin-right: .7rem;
+  padding: .3rem;
+}
+.pinned {
+  margin-right: .7rem;
+  background-color:#e1eafe ;
+  padding: .3rem;
+  border-radius: 50%;
+}
+
+.note .content {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  font-family: 'Roboto',sans-serif;
+  -webkit-line-clamp: 5;
+  -webkit-box-orient: vertical;
+  line-height: 2rem;
+  z-index: -1;
+  padding: 0rem 1rem;
+}
+
+.note .content p,.note .content h1,.note .content h2{
+  margin: 0;
+}
+
+
+.note .option {
+  position: relative;
+}
+
+.modal-content {
+  padding: 20px;
+  max-width: 600px;
+  min-width: 300px;
+  min-height: 250px;
+  border: none;
+  margin: auto;
+  font-family: 'Roboto',sans-serif;
+  position: relative;
+  border-radius: 10px;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.modal-content button{
+  background-color: rgb(26, 26, 46,.85);
+  color: #fff;
+  padding: 12px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  width: fit-content;
+  position: absolute;
+  left: 75%;
+}
+
+.modal-content button:hover{
+  background-color: rgb(26, 26, 46);
+}
+
+.modal-overlay {
+  background: rgba(0, 0, 0, 0.5);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  z-index: 3;
+  align-items: center;
+}

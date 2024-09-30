@@ -1,0 +1,133 @@
+.login {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #eef1f8;
+  height: 100vh;
+  width: 100vw;
+}
+
+.login-window {
+  width: 30%;
+  flex-direction: column;
+  border-radius: 15px;
+  background-color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  -webkit-box-shadow: 0 0px 40px rgba(0, 0, 0, 0.05);
+  -moz-box-shadow: 0 0px 40px rgba(0, 0, 0, 0.05);
+  -ms-box-shadow: 0 0px 40px rgba(0, 0, 0, 0.05);
+  -o-box-shadow: 0 0px 40px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 0px 40px rgba(0, 0, 0, 0.05);
+}
+
+.logo-login {
+  display: flex;
+  flex-direction: row;
+  font-size: x-large;
+  margin: 0.3rem 1rem;
+  font-family: 'Jost',sans-serif;
+  font-weight: 400;
+  padding-bottom: 0.75rem;
+  align-items: center;
+}
+
+.logo-login img {
+  object-fit: contain;
+  margin-right: 0.6rem;
+  width: 4rem;
+  background-color: #f3f6fd;
+  padding: .5rem 0.5rem;
+  border-radius: 6px;
+}
+
+.logo-login h1 {
+  font-family: "Jost", sans-serif;
+  font-weight: 400;
+  font-size: 1.54rem;
+}
+
+.login-window h2{
+  font-family: "Jost", sans-serif;
+  font-weight: 400;
+  margin:0  0 .5rem 0;
+  font-size: xx-large;
+}
+
+.login-window p{
+  color: gray;
+  margin-top: 0;
+  margin-bottom: 1rem;
+  font-weight: 400;
+  font-family: 'Roboto',sans-serif;
+  cursor: pointer;
+}
+
+.login-window input[type='email'],
+.login-window input[type='text'],
+.login-window input[type='password']{
+  width: 90%;
+  background-color: #f3f6fd;
+  border-radius: 8px;
+  padding: .5rem;
+  font-size: 14px;
+  margin-bottom: .65rem;
+  border: solid 1px  #DCDDDF;
+}
+
+.login-window span{
+  color: black;
+  font-weight: 600;
+}
+
+.login-window a{
+  font-family: 'Roboto';
+  color: black;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.login-window button{
+  color: white;
+  font-family: 'Roboto',sans-serif;
+  background-color: #1f1c2f;
+  font-size: medium;
+  padding: .5rem .75rem;
+  border-radius: 6px;
+  margin: 1rem 0rem;
+  cursor: pointer;
+}
+
+
+.option-container{
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  align-items: center;
+}
+
+.option-container div{
+  display: flex;
+  width: 95%;
+  font-size: 13px;
+  justify-content: space-between;
+  align-items: center;
+  font-family: 'Roboto',sans-serif;
+  height: fit-content;
+  margin-bottom: .4rem;
+}
+
+.option-container input[type='checkbox']{
+  margin: 0px 3px;
+}
+
+.login-window label{
+  color: #768492;
+}
+
+label{
+  display: flex;
+  align-items: center;
+}

@@ -1,0 +1,188 @@
+.account-settings {
+  width: calc(95vw - 260px);
+  height: 100vh;
+  margin-left: 292px;
+  animation: ease-in 0.3s appear;
+}
+
+
+.heading {
+  background-color: white;
+  padding: 0.8rem 1rem;
+  font-size: x-large;
+  font-family: 'Jost',sans-serif;
+  height: 50px;
+  align-items: center;
+  display: flex;
+  color: black;
+  border-radius: 10px;
+  margin: 1rem 0rem;
+}
+
+@media (max-width:1000px) {
+        .account-settings{
+                margin: 1rem;
+                width: 88%;
+        }
+}
+
+.account-settings .account-container {
+  height: calc(100vh - 76px);
+  margin: 1rem 0rem;
+  background-color: white;
+  border-radius: 15px;
+  padding: 1.5rem;
+}
+
+.profile-settings{
+        display: flex;
+        flex-direction: column;
+        font-size: medium;
+}
+
+.current-avatar{
+        border: solid 1px rgb(202, 201, 201);
+        border-radius: 10px;
+        width: fit-content;
+        padding: .3rem;
+        display: flex;
+        align-items: center;
+        margin-right: .75rem;
+}
+
+
+
+.change-name{
+        border: none;
+        border-bottom: solid skyblue 2px;
+        background-color: #f3f6fd;
+        border-radius: 5px 5px 0 0 ;
+        font-size: medium;
+        padding: .5rem;
+}
+
+.change-name:focus{
+        outline: none;
+}
+
+.save{
+        border: none;
+        color: white;
+        padding: .4rem .6rem;
+        background-color: #1a1a2e;
+        border-radius: 6px;
+        font-size: medium;
+}
+
+.edit-button{
+        width: 1.3rem;
+        height: 1.3rem;
+        background-color: #f3f6fd;
+        border-radius: 6px;
+        padding: .3rem;
+}
+
+.account-settings-edit{
+        margin-top: 2rem;
+}
+
+.account-settings-edit div{
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        margin-bottom: .75rem;
+}
+
+.account-settings-edit label{
+        font-size: medium;
+        margin: 0 auto .3rem 1rem;
+}
+
+.account-settings-edit input{
+        height: 40px;
+        width: 60%;
+    line-height: 30px;
+    background: #f3f6fd;
+    border: 1px solid #DCDDDF;
+    font-size: 14px;
+    color: #768492;
+    margin-left: .75rem;
+    border-radius: 8px;
+    padding: 0 0.75rem;
+    font-size: 1rem;
+}
+
+.account-settings-edit input:focus{
+        color: black;
+        background-color: white;
+}
+
+.password-section , button#save-changes{
+        opacity: 0;
+        max-height: 0;
+}
+
+.password-section.show,button#save-changes.show{
+        opacity: 1;
+        max-height: fit-content;
+}
+
+button#save-changes{
+        border: none;
+        color: white;
+        background-color: green;
+        border-radius: 4px;
+        padding: .3rem .5rem;
+        font-size: medium;
+        font-family: 'Roboto',sans-serif;
+        margin-left: 1rem;
+}
+
+
+.choose-avatar{
+        display: flex;
+        flex-direction: column;
+}
+.avatar-list{
+        display: flex;
+        height: fit-content;
+        border: solid 1px rgb(202, 201, 201);
+        box-sizing: border-box;
+        border-radius: 10px;
+        padding: .3rem;
+        max-height: 0;
+        opacity: 0;
+        transform: translateY(-10px);
+        transition: transform 0.3s ease-in-out,opacity 0.3s ease-in-out;
+}
+
+.avatar-list.show{
+        opacity: 1;
+        max-height: fit-content;
+        width: fit-content;
+        transform: translateY(0px);
+}
+
+.avatar-img{
+        width: 80px;
+        height: 80px;
+        object-fit: cover;
+        margin: .2rem;
+}
+
+.present-details{
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        margin-right: auto;
+}
+
+.selected-avatar{
+        border: solid 4px green;
+        
+}
+
+.account-settings-edit .btn{
+        margin-bottom: 1rem;
+        margin-left: 12px;
+}

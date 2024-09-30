@@ -1,0 +1,28 @@
+.bin-container {
+        width: calc(92vw - 260px);
+  min-height: calc(100vh - 76px);
+  background-color: white;
+  border-radius: 15px;
+  padding: 1.5rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1rem;
+}
+
+@media (max-width:1000px) {
+  .bin-container{
+    width: fit-content!important;
+  }
+  .heading{
+    width: 83vw !important;
+    overflow-x: hidden !important;
+  }
+  .main-style{
+    margin: 1rem;
+  }
+}
+
+.bin-container .note-options{
+  width: fit-content;
+  text-wrap: nowrap;
+}

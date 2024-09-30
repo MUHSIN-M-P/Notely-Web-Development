@@ -1,0 +1,66 @@
+.main-style{
+        width: calc(95vw - 260px);
+  height: 100vh;
+  margin-left: 292px;
+  animation: ease-in 0.3s appear;
+}
+
+.reminder-notes-container{
+  width: calc(92vw - 260px);
+  min-height: calc(100vh - 76px);
+  background-color: white;
+  border-radius: 15px;
+  padding: 1.5rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1rem;
+}
+
+@media (max-width:1000px) {
+  .reminder-notes-container{
+    box-sizing: border-box;
+    width: fit-content !important;
+    justify-content: center;
+    height: 100%;
+  }
+  
+  .main-content{
+    padding: 0px;
+  }
+
+  .main-style{
+    box-sizing: border-box;
+    width: 97vw;
+  }
+}
+
+.reminder-note{
+  min-width: 300px;
+  width: fit-content;
+  height: 100px;
+  overflow-x: hidden;
+  border-radius: 10px;
+  overflow-y: hidden;
+  padding: .75rem 1rem;
+  -webkit-box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.1);
+  -moz-box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.1);
+  box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.1);
+}
+
+.reminder-note img{
+  width: 15px;
+  margin-right: .5rem;
+  object-fit: contain;
+
+}
+
+.reminder-note .reminder{
+  background-color:#e1e7f7 ;
+        color: gray;
+        border-radius: 6px;
+        padding: .3rem;
+        display: flex;
+        align-items: center;
+        font-family: 'Roboto',sans-serif;
+        margin: .3rem 0rem;
+}
