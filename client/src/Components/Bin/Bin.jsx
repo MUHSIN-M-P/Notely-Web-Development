@@ -3,6 +3,7 @@ import Modal from "react-modal";
 import "./Bin.css";
 import { useState, useEffect } from "react";
 import axios from "axios";
+import moment from "moment";
 import dateWhite from "../../Assets/date-white.png";
 import dateBlack from "../../Assets/date-black.png";
 import optionsWhite from "../../Assets/options-white.png";
@@ -107,7 +108,9 @@ export const Bin = () => {
                 <div className="header">
                   <div className="date">
                     <img src={hover ? dateWhite : dateBlack} alt="" />
-                    <p className="updated-date">{item.updated_at}</p>
+                    <p className="updated-date">
+                      {moment(item.updated_at).format("MMM D, YYYY h:mm A")}
+                    </p>
                   </div>
                   <div className="option">
                     <div className="container">

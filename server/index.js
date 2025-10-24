@@ -3,12 +3,15 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import bodyParser from "body-parser";
 import cors from "cors";
-import pg from "pg";
+import pkg from "pg";
 import cookieParser from "cookie-parser";
+import dotenv from "dotenv";
 
 const app = express();
 const saltRounds = 10;
 const SECRET_KEY = process.env.ACCESS_TOKEN_SECRET || "0000";
+
+dotenv.config();
 
 app.use(bodyParser.json());
 app.use(express.json());
@@ -22,12 +25,13 @@ app.use(
   })
 );
 
-const db = new pg.Client({
-  user: "postgres",
-  host: "localhost",
-  database: "Notely",
-  password: "1234",
-  port: "5432",
+const {Pool}=pkg;
+
+const db = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false, // required for Render
+  },
 });
 db.connect();
 
@@ -61,7 +65,6 @@ app.get("/auth/check-session", (req, res) => {
       .json({ isLoggedIn: false, message: "No token found" });
   }
 
-  // Verify the token
   jwt.verify(token, SECRET_KEY, (err, decoded) => {
     if (err) {
       return res
@@ -69,14 +72,12 @@ app.get("/auth/check-session", (req, res) => {
         .json({ isLoggedIn: false, message: "Invalid token" });
     }
 
-    // Token is valid
-    return [res.status(200).json({ isLoggedIn: true, user: decoded.user })];
+    return res.status(200).json({ isLoggedIn: true, user: decoded.user });
   });
 });
 
 app.post("/login", async (req, res) => {
   const { email, password } = req.body;
-  //Find user by email
   try {
     const result = await db.query("SELECT * FROM users WHERE email =$1", [
       email,
@@ -96,7 +97,6 @@ app.post("/login", async (req, res) => {
               SECRET_KEY,
               { expiresIn: "168h" }
             );
-            // expire time of a token
 
             //set the token in HTTP only cookie
             // max age for cookie . after the JWT token expires, even if the cookie persists, the user will need to re-authenticate.
@@ -108,7 +108,7 @@ app.post("/login", async (req, res) => {
               maxAge: 7 * 24 * 60 * 60 * 1000, // 1 week
             });
             
-            return [res.json({ message: "Login successful", token })];
+            return res.json({ message: "Login successful", token });
           } else {
             return res.status(400).json({ message: "Invalid password" });
           }
@@ -139,21 +139,20 @@ app.post("/signup", async (req, res) => {
         if (err) {
           console.log("Error in bcrypt hashing", err);
         } else {
-          // Push the new user into the db
           const avatar_img = 'user'
           const result = await db.query(
-            "INSERT INTO users (username,email,password,avatar_img) VALUES ($1,$2,$3,$4)",
+            "INSERT INTO users (username,email,password,avatar_img) VALUES ($1,$2,$3,$4) RETURNING *",
             [username, email, hash,avatar_img]
           );
           console.log(result);
-          if (result.rows.length > 0) {
-            user = result.rows[0]; // user is the first (and only) row from the query result
-          }
+          
+          const user = result.rows[0];
+          
           // Create JWT
           const token = jwt.sign(
             { userId: user.id, email: user.email },
             SECRET_KEY,
-            { expiresIn: "1h" }
+            { expiresIn: "168h" }
           );
 
           // Set the token in HTTP-only cookie
@@ -173,12 +172,10 @@ app.post("/signup", async (req, res) => {
   }
 });
 
-// getting notes
 app.get("/home", authMiddleware, async (req, res) => {
   const userEmail = req.user.email; // Get user's email from JWT token
 
   try {
-    // Query to join users and notes tables and retrieve all relevant fields
     const notesResult = await db.query(
       `SELECT notes.id, notes.user_id, notes.content, notes.color, notes.updated_at, notes.reminder ,notes.pinned
        FROM notes 
@@ -198,7 +195,6 @@ app.get("/home", authMiddleware, async (req, res) => {
   }
 });
 
-// storing notes
 
 app.post("/home/create-note", authMiddleware, async (req, res) => {
   const { content, color = "white", reminder, time } = req.body;
@@ -273,9 +269,8 @@ app.post('/home/update-account', authMiddleware, async (req, res) => {
     }
 
     if (newPassword) {
-      // You should hash the password here before saving
       updateFields.push(`password = $${queryCount}`);
-      const hashedPassword = await hashPassword(newPassword); // Create a hashPassword function
+      const hashedPassword = await bcrypt.hash(newPassword,saltRounds); 
       queryParams.push(hashedPassword);
       queryCount++;
     }
@@ -302,6 +297,23 @@ app.post('/home/update-account', authMiddleware, async (req, res) => {
   }
 });
 
+app.delete('/home/delete-account',authMiddleware,async(req,res)=>{
+  const id= req.user.userId;
+  try {
+    const result = await db.query("SELECT * FROM users WHERE id = $1",[id])
+    if(result.rowCount>0){
+       await db.query('DELETE FROM users WHERE id = $1', [id]);
+       // Clear the authentication cookie
+       res.clearCookie("token", { httpOnly: true, secure: process.env.NODE_ENV === 'production' });
+      res.status(200).json({message:'Account deletion successful',user:result.rows[0]})
+    }else{
+      res.status(404).json({message:'user not found'})
+    }
+  } catch (error) {
+    res.status(500).json({message:'error in deleting account',error})
+  }
+})
+
 
 app.put('/home/edit/:id', async (req, res) => {
   const noteId = req.params.id;  // Note ID from the URL
@@ -321,7 +333,7 @@ app.put('/home/edit/:id', async (req, res) => {
        SET content = $1, color = $2, updated_at = $3, reminder = $4 
        WHERE id = $5 
        RETURNING *`,
-      [content, color, updated_at, reminder, noteId]  // Correct order of parameters
+      [content, color, updated_at, reminder, noteId]  
     );
     
     if (result.rowCount > 0) {
@@ -437,7 +449,7 @@ app.put('/home/bin/:id',authMiddleware,async(req,res)=>{
 })
 
 app.get("/home/reminders", authMiddleware, async (req, res) => {
-  const userEmail = req.user.email; // Get user's email from JWT token
+  const userEmail = req.user.email; 
 
   try {
     // Query to join users and notes tables and retrieve all relevant fields
@@ -461,7 +473,7 @@ app.get("/home/reminders", authMiddleware, async (req, res) => {
 });
 
 app.get("/home/bin", authMiddleware, async (req, res) => {
-  const userEmail = req.user.email; // Get user's email from JWT token
+  const userEmail = req.user.email; 
 
   try {
     // Query to join users and notes tables and retrieve all relevant fields
@@ -485,7 +497,7 @@ app.get("/home/bin", authMiddleware, async (req, res) => {
 });
 app.post("/logout", (req, res) => {
   res.clearCookie("token", { httpOnly: true, secure: true });
-  return res.json({ message: "Logout successful" });
+  return res.status(200).json({ message: 'Logout successful' })
 });
 
 

@@ -38,7 +38,7 @@ export const Login = ({setIsAuthenticated}) => {
       );
       
       const { token } = response.data;
-      console.log(token)
+      // console.log(token)
       if (response.data.message === "Login successful") {
         localStorage.setItem('token', token);
         setIsAuthenticated(true);

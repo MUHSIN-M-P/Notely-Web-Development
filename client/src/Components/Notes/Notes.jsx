@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import Modal from "react-modal";
+import moment from "moment";
 import dateWhite from "../../Assets/date-white.png";
 import dateBlack from "../../Assets/date-black.png";
 import pinWhite from "../../Assets/pin-white.png";
@@ -91,7 +92,9 @@ export const Notes = (props) => {
       <div className="header">
         <div className="date">
           <img src={hover ? dateWhite : dateBlack} alt="" />
-          <p className="updated-date">{props.updated_at}</p>
+          <p className="updated-date">
+            {moment(props.updated_at).format("MMM D, YYYY h:mm A")}
+          </p>
         </div>
         <div className="option">
           <div className="container">
