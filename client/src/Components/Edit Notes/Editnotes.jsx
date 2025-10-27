@@ -6,6 +6,7 @@ import "react-datetime/css/react-datetime.css";
 import moment from "moment";
 import "react-quill/dist/quill.snow.css";
 import axios from "axios";
+import API_URL from "../../config";
 import Reminder_img from "../../Assets/reminder.png";
 
 export const Editnote = () => {
@@ -43,7 +44,7 @@ export const Editnote = () => {
         setContent(content);
         try {
             const response = await axios.put(
-                `http://localhost:5000/home/edit/${id}`,
+                `${API_URL}/home/edit/${id}`,
                 {
                     content,
                     color,

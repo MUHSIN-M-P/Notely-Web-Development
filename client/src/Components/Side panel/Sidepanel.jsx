@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import "./Sidepanel.css";
 import { useLocation, useNavigate } from "react-router-dom";
+import API_URL from "../../config";
 import user from "../../Assets/user.png";
 import logo from "../../Assets/icons8-notes-64.png";
 import myNotes from "../../Assets/my-notes-new.png";
@@ -17,12 +18,9 @@ export const Sidepanel = (props) => {
     useEffect(() => {
         const fetchDetails = async () => {
             try {
-                const response = await axios.get(
-                    "http://localhost:5000/home/account",
-                    {
-                        withCredentials: true,
-                    }
-                );
+                const response = await axios.get(`${API_URL}/home/account`, {
+                    withCredentials: true,
+                });
                 setUsername(response.data.user.username);
             } catch (error) {
                 console.error("Failed to fetch account details", error);
@@ -40,7 +38,7 @@ export const Sidepanel = (props) => {
 
     const handleLogout = async () => {
         try {
-            const response = await fetch("http://localhost:5000/logout", {
+            const response = await fetch(`${API_URL}/logout`, {
                 method: "POST",
                 credentials: "include",
             });

@@ -7,19 +7,19 @@ import pkg from "pg";
 import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
 
+dotenv.config();
+
 const app = express();
 const saltRounds = 10;
 const SECRET_KEY = process.env.ACCESS_TOKEN_SECRET || "0000";
 
-dotenv.config();
-
 app.use(bodyParser.json());
 app.use(express.json());
 app.use(cookieParser());
-// informing CORS to allow data from localhost:3000
+// informing CORS to allow data from frontend
 app.use(
   cors({
-    origin: "http://localhost:3000", // frontend's address
+    origin: process.env.CLIENT_URL || "http://localhost:3000", // frontend's address from env
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
   })
@@ -502,6 +502,6 @@ app.post("/logout", (req, res) => {
 
 
 
-app.listen(5000, () => {
+app.listen(process.env.PORT || 5000, () => {
   console.log("Server is running on port 5000");
 });

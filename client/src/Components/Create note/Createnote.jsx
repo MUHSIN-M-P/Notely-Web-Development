@@ -6,6 +6,7 @@ import "react-datetime/css/react-datetime.css";
 import moment from "moment";
 import "react-quill/dist/quill.snow.css";
 import axios from "axios";
+import API_URL from "../../config";
 import Reminder_img from "../../Assets/reminder.png";
 import { useNavigate } from "react-router-dom";
 
@@ -38,7 +39,7 @@ export const Createnote = () => {
 
         try {
             const response = await axios.post(
-                "http://localhost:5000/home/create-note",
+                `${API_URL}/home/create-note`,
                 {
                     content, // Quill content (HTML)
                     color,

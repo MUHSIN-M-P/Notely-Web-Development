@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Notes } from "../Notes/Notes";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import API_URL from "../../config";
 import "./Homepage.css";
 
 export const Homepage = () => {
@@ -14,9 +15,9 @@ export const Homepage = () => {
             try {
                 let url;
                 if (selectedCategory === "All") {
-                    url = "http://localhost:5000/home";
+                    url = `${API_URL}/home`;
                 } else if (selectedCategory === "Pin Notes") {
-                    url = "http://localhost:5000/home/pin";
+                    url = `${API_URL}/home/pin`;
                 }
                 const response = await axios.get(url, {
                     withCredentials: true,

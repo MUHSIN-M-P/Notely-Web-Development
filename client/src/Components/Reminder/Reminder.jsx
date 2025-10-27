@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import "./Reminder.css";
 import axios from "axios";
 import moment from "moment";
+import API_URL from "../../config";
 import Reminder_img from "../../Assets/reminder.png";
 
 export const Reminder = () => {
@@ -9,12 +10,9 @@ export const Reminder = () => {
     useEffect(() => {
         const checkNotes = async () => {
             try {
-                const response = await axios.get(
-                    "http://localhost:5000/home/reminders",
-                    {
-                        withCredentials: true,
-                    }
-                );
+                const response = await axios.get(`${API_URL}/home/reminders`, {
+                    withCredentials: true,
+                });
                 if (response.data && response.data.notes) {
                     setReminderNotes(response.data.notes);
                 } else {

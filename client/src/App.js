@@ -11,6 +11,7 @@ import { Bin } from "./Components/Bin/Bin";
 import { useEffect, useState } from "react";
 import PrivateRoute from "./Components/Homepage/PrivateRoute";
 import { Editnote } from "./Components/Edit Notes/Editnotes";
+import API_URL from "./config";
 
 function App() {
   const [isUserLoggedIn, setIsUserLoggedIn] = useState(false);
@@ -21,7 +22,7 @@ function App() {
       const token = localStorage.getItem("token");
       if (token) {
         try {
-          const response = await fetch("http://localhost:5000/auth/check-session", {
+          const response = await fetch(`${API_URL}/auth/check-session`, {
             method: "GET",
             headers: {
               Authorization: `Bearer ${token}`,

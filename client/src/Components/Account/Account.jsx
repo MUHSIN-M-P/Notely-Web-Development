@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import API_URL from "../../config";
 import "./Account.css";
 import { CiEdit } from "react-icons/ci";
 import user from "../../Assets/user.png";
@@ -24,12 +25,9 @@ export const Account = () => {
     useEffect(() => {
         const fetchDetails = async () => {
             try {
-                const response = await axios.get(
-                    "http://localhost:5000/home/account",
-                    {
-                        withCredentials: true,
-                    }
-                );
+                const response = await axios.get(`${API_URL}/home/account`, {
+                    withCredentials: true,
+                });
                 setUserDetails(response.data.user);
             } catch (error) {
                 console.error("Failed to fetch account details", error);
@@ -69,21 +67,18 @@ export const Account = () => {
                 const token = localStorage.getItem("token");
 
                 // Send only the fields that were updated
-                const response = await fetch(
-                    "http://localhost:5000/home/update-account",
-                    {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                            Authorization: `Bearer ${token}`,
-                        },
-                        body: JSON.stringify({
-                            ...updatedFields, // Only send fields that were updated
-                            password, // Include password if it was updated
-                            newPassword,
-                        }),
-                    }
-                );
+                const response = await fetch(`${API_URL}/home/update-account`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                    body: JSON.stringify({
+                        ...updatedFields, // Only send fields that were updated
+                        password, // Include password if it was updated
+                        newPassword,
+                    }),
+                });
 
                 const data = await response.json();
                 if (response.ok) {
@@ -115,7 +110,7 @@ export const Account = () => {
         if (confirmDelete) {
             try {
                 const response = await axios.delete(
-                    "http://localhost:5000/home/delete-account",
+                    `${API_URL}/home/delete-account`,
                     { withCredentials: true }
                 );
 
