@@ -21,6 +21,24 @@ export const Account = () => {
     const [detailsChanged, setDetailsChanged] = useState(false);
     const [userDetails, setUserDetails] = useState({});
     const [updatedFields, setUpdatedFields] = useState({});
+    const [avatar, setAvatar] = useState(user);
+
+    // Map avatar names to actual images
+    const avatarMap = {
+        user: user,
+        avatar1: avatar1,
+        avatar2: avatar2,
+        avatar3: avatar3,
+        avatar4: avatar4,
+    };
+
+    // Map images back to names for saving
+    const getAvatarName = (avatarImg) => {
+        const entry = Object.entries(avatarMap).find(
+            ([key, value]) => value === avatarImg
+        );
+        return entry ? entry[0] : "user";
+    };
 
     useEffect(() => {
         const fetchDetails = async () => {
@@ -29,21 +47,25 @@ export const Account = () => {
                     withCredentials: true,
                 });
                 setUserDetails(response.data.user);
+                // Set avatar based on user's saved avatar_img
+                if (response.data.user.avatar_img) {
+                    setAvatar(avatarMap[response.data.user.avatar_img] || user);
+                }
             } catch (error) {
                 console.error("Failed to fetch account details", error);
             }
         };
         fetchDetails();
     }, []);
-
-    const [avatar, setAvatar] = useState(userDetails.avatar_img || user);
     const toggleMenu2 = () => {
         setDropDown2(!dropDown2);
     };
 
     const handleAvatarClick = (newAvatar) => {
         setAvatar(newAvatar);
-        setUpdatedFields((prev) => ({ ...prev, avatar_img: newAvatar }));
+        // Save avatar name instead of image object
+        const avatarName = getAvatarName(newAvatar);
+        setUpdatedFields((prev) => ({ ...prev, avatar_img: avatarName }));
         setDetailsChanged(true);
     };
 
@@ -64,30 +86,45 @@ export const Account = () => {
         } else {
             setError("");
             try {
-                const token = localStorage.getItem("token");
-
                 // Send only the fields that were updated
-                const response = await fetch(`${API_URL}/home/update-account`, {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${token}`,
-                    },
-                    body: JSON.stringify({
+                const response = await axios.post(
+                    `${API_URL}/home/update-account`,
+                    {
                         ...updatedFields, // Only send fields that were updated
-                        password, // Include password if it was updated
-                        newPassword,
-                    }),
-                });
+                        password: password || undefined, // Include password only if provided
+                        newPassword: newPassword || undefined,
+                    },
+                    {
+                        withCredentials: true,
+                    }
+                );
 
-                const data = await response.json();
-                if (response.ok) {
-                    console.log("Account updated successfully");
+                if (response.status === 200) {
+                    alert("Account updated successfully!");
+                    setDetailsChanged(false);
+                    setPasswordChange(false);
+                    setUpdatedFields({});
+                    setNewPassword("");
+                    setConfirmPassword("");
+                    setPassword("");
+                    // Refresh user details
+                    const updatedUser = await axios.get(
+                        `${API_URL}/home/account`,
+                        {
+                            withCredentials: true,
+                        }
+                    );
+                    setUserDetails(updatedUser.data.user);
                 } else {
-                    setError(data.message || "Failed to update account");
+                    setError(
+                        response.data.message || "Failed to update account"
+                    );
                 }
             } catch (err) {
-                setError("An error occurred. Please try again.");
+                setError(
+                    err.response?.data?.message ||
+                        "An error occurred. Please try again."
+                );
             }
         }
     };
@@ -99,6 +136,7 @@ export const Account = () => {
 
     const handleSaveClick = () => {
         setIsEditing(false);
+        setUserDetails((prev) => ({ ...prev, username: tempName }));
         handleFieldChange("username", tempName);
     };
 
@@ -200,14 +238,32 @@ export const Account = () => {
                     </div>
                 </div>
                 <div className="account-settings-edit">
+                    {error && (
+                        <div
+                            style={{
+                                color: "red",
+                                backgroundColor: "#ffebee",
+                                padding: "10px",
+                                borderRadius: "5px",
+                                marginBottom: "1rem",
+                                marginLeft: "0.75rem",
+                            }}
+                        >
+                            {error}
+                        </div>
+                    )}
                     <div>
                         <label htmlFor="user-name">User Name :</label>
                         <input
                             type="text"
                             id="user-name"
-                            onChange={(e) =>
-                                handleFieldChange("username", e.target.value)
-                            }
+                            onChange={(e) => {
+                                setUserDetails((prev) => ({
+                                    ...prev,
+                                    username: e.target.value,
+                                }));
+                                handleFieldChange("username", e.target.value);
+                            }}
                             value={userDetails.username || ""}
                             required
                         />
@@ -217,9 +273,13 @@ export const Account = () => {
                         <input
                             type="email"
                             id="email"
-                            onChange={(e) =>
-                                handleFieldChange("email", e.target.value)
-                            }
+                            onChange={(e) => {
+                                setUserDetails((prev) => ({
+                                    ...prev,
+                                    email: e.target.value,
+                                }));
+                                handleFieldChange("email", e.target.value);
+                            }}
                             value={userDetails.email || ""}
                             required
                         />
@@ -239,6 +299,7 @@ export const Account = () => {
                             <input
                                 type="password"
                                 onChange={(e) => setPassword(e.target.value)}
+                                value={password}
                                 id="current-password"
                             />
                         </div>
@@ -247,6 +308,7 @@ export const Account = () => {
                             <input
                                 type="password"
                                 id="new-password"
+                                value={newPassword}
                                 style={{
                                     border:
                                         error === "Passwords do not match"
@@ -263,6 +325,7 @@ export const Account = () => {
                             <input
                                 type="password"
                                 id="confirm-password"
+                                value={confirmPassword}
                                 style={{
                                     border:
                                         error === "Passwords do not match"

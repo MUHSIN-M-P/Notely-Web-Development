@@ -6,6 +6,9 @@ import cors from "cors";
 import pkg from "pg";
 import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
+import { body, param, validationResult } from "express-validator";
+import xss from "xss";
+import helmet from "helmet";
 
 dotenv.config();
 
@@ -13,13 +16,33 @@ const app = express();
 const saltRounds = 10;
 const SECRET_KEY = process.env.ACCESS_TOKEN_SECRET || "0000";
 
+// Security middleware
+app.use(helmet()); // Adds various HTTP headers for security
 app.use(bodyParser.json());
-app.use(express.json());
+app.use(express.json({ limit: '10mb' })); // Limit payload size to prevent DOS
 app.use(cookieParser());
-// informing CORS to allow data from frontend
+
+// Custom XSS sanitization middleware
+const sanitizeInput = (req, res, next) => {
+  if (req.body) {
+    Object.keys(req.body).forEach(key => {
+      if (typeof req.body[key] === 'string' && key !== 'content') {
+        // Sanitize all string inputs except 'content' (which is HTML from Quill editor)
+        req.body[key] = xss(req.body[key], {
+          whiteList: {}, // Don't allow any HTML tags except for content field
+          stripIgnoreTag: true
+        });
+      }
+    });
+  }
+  next();
+};
+
+app.use(sanitizeInput);
+
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || "http://localhost:3000", // frontend's address from env
+    origin: process.env.CLIENT_URL || "http://localhost:3000", 
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
   })
@@ -33,9 +56,17 @@ const db = new Pool({
     rejectUnauthorized: false, // required for Render
   },
 });
-db.connect();
-
-// check whether user have logged in to protect from going to other routes, by this you need JWT token for every request.
+// Validation middleware helper
+const validate = (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ 
+      message: 'Validation failed', 
+      errors: errors.array() 
+    });
+  }
+  next();
+};
 
 const authMiddleware = (req, res, next) => {
   const token = req.cookies.token; 
@@ -76,7 +107,13 @@ app.get("/auth/check-session", (req, res) => {
   });
 });
 
-app.post("/login", async (req, res) => {
+app.post("/login", 
+  [
+    body('email').isEmail().normalizeEmail().withMessage('Invalid email format'),
+    body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
+  ],
+  validate,
+  async (req, res) => {
   const { email, password } = req.body;
   try {
     const result = await db.query("SELECT * FROM users WHERE email =$1", [
@@ -122,7 +159,16 @@ app.post("/login", async (req, res) => {
   }
 });
 
-app.post("/signup", async (req, res) => {
+app.post("/signup", 
+  [
+    body('fName').trim().isLength({ min: 2, max: 50 }).withMessage('First name must be 2-50 characters'),
+    body('lName').trim().isLength({ min: 1, max: 50 }).withMessage('Last name must be 1-50 characters'),
+    body('email').isEmail().normalizeEmail().withMessage('Invalid email format'),
+    body('password').isLength({ min: 6, max: 100 }).withMessage('Password must be 6-100 characters')
+      .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/).withMessage('Password must contain uppercase, lowercase and number'),
+  ],
+  validate,
+  async (req, res) => {
   const { fName, lName, email, password } = req.body;
   const username = fName + " " + lName;
   try {
@@ -198,7 +244,16 @@ app.get("/home", authMiddleware, async (req, res) => {
 });
 
 
-app.post("/home/create-note", authMiddleware, async (req, res) => {
+app.post("/home/create-note", 
+  authMiddleware,
+  [
+    body('content').notEmpty().withMessage('Note content is required')
+      .isLength({ max: 50000 }).withMessage('Content too long'),
+    body('color').optional().isIn(['white', '#87baf5', '#aa87f5', '#f0864a', '#f674ad', '#1f1c2f', '#8ac3a3'])
+      .withMessage('Invalid color'),
+  ],
+  validate,
+  async (req, res) => {
   const { content, color = "white", reminder, time } = req.body;
   const userId = req.user.userId; // Get user ID from JWT token
   const createdAt = new Date()
@@ -211,10 +266,20 @@ app.post("/home/create-note", authMiddleware, async (req, res) => {
     .replace(",", "");
 
   try {
+    // Sanitize HTML content but allow safe tags for rich text editor
+    const sanitizedContent = xss(content, {
+      whiteList: {
+        p: [], h1: [], h2: [], br: [], strong: [], em: [], u: [], 
+        ul: [], ol: [], li: ['data-list'], span: ['style', 'class'],
+        a: ['href'], img: ['src', 'alt'], code: [], pre: [], blockquote: []
+      },
+      stripIgnoreTag: false
+    });
+
     const result = await db.query(
       `INSERT INTO notes (user_id, content, color, updated_at, reminder) 
        VALUES ($1, $2, $3, $4, $5) RETURNING *`,
-      [userId, content, color, createdAt, reminder]
+      [userId, sanitizedContent, color, createdAt, reminder]
     );
 
     return res.json({
@@ -242,7 +307,16 @@ app.get('/home/account',authMiddleware,async(req,res)=>{
   }
 })
 
-app.post('/home/update-account', authMiddleware, async (req, res) => {
+app.post('/home/update-account', 
+  authMiddleware,
+  [
+    body('username').optional().trim().isLength({ min: 2, max: 100 }).withMessage('Username must be 2-100 characters'),
+    body('email').optional().isEmail().normalizeEmail().withMessage('Invalid email format'),
+    body('newPassword').optional().isLength({ min: 6, max: 100 }).withMessage('Password must be 6-100 characters'),
+    body('avatar_img').optional().isIn(['user', 'avatar1', 'avatar2', 'avatar3', 'avatar4']).withMessage('Invalid avatar'),
+  ],
+  validate,
+  async (req, res) => {
   const { userId } = req.user; // Assuming authMiddleware adds user info to req
   const { username, email, avatar_img, newPassword } = req.body;
 
@@ -285,14 +359,15 @@ app.post('/home/update-account', authMiddleware, async (req, res) => {
     const query = `
     UPDATE users
     SET ${updateFields.join(', ')}
-    WHERE id = $${queryParams.length + 1}`;
+    WHERE id = $${queryParams.length + 1}
+    RETURNING *`;
   queryParams.push(userId);
   
   // Use db.query here
-  await db.query(query, queryParams);
+  const result = await db.query(query, queryParams);
   
 
-    res.json({ message: 'User details updated successfully' });
+    res.json({ message: 'User details updated successfully', user: result.rows[0] });
   } catch (error) {
     console.error('Error updating user details:', error);
     res.status(500).json({ message: 'Server error' });
@@ -322,9 +397,20 @@ app.delete('/home/delete-account',authMiddleware,async(req,res)=>{
 })
 
 
-app.put('/home/edit/:id', async (req, res) => {
+app.put('/home/edit/:id', 
+  authMiddleware,
+  [
+    param('id').isInt().withMessage('Invalid note ID'),
+    body('content').notEmpty().withMessage('Note content is required')
+      .isLength({ max: 50000 }).withMessage('Content too long'),
+    body('color').optional().isIn(['white', '#87baf5', '#aa87f5', '#f0864a', '#f674ad', '#1f1c2f', '#8ac3a3'])
+      .withMessage('Invalid color'),
+  ],
+  validate,
+  async (req, res) => {
   const noteId = req.params.id;  // Note ID from the URL
   const { content, color = "white", reminder } = req.body;
+  const userId = req.user.userId;
   const updated_at = new Date()
     .toLocaleString("en-US", {
       day: "numeric",
@@ -335,18 +421,28 @@ app.put('/home/edit/:id', async (req, res) => {
     .replace(",", "");
     
   try {
+    // Sanitize HTML content
+    const sanitizedContent = xss(content, {
+      whiteList: {
+        p: [], h1: [], h2: [], br: [], strong: [], em: [], u: [], 
+        ul: [], ol: [], li: ['data-list'], span: ['style', 'class'],
+        a: ['href'], img: ['src', 'alt'], code: [], pre: [], blockquote: []
+      },
+      stripIgnoreTag: false
+    });
+
     const result = await db.query(
       `UPDATE notes 
        SET content = $1, color = $2, updated_at = $3, reminder = $4 
-       WHERE id = $5 
+       WHERE id = $5 AND user_id = $6
        RETURNING *`,
-      [content, color, updated_at, reminder, noteId]  
+      [sanitizedContent, color, updated_at, reminder, noteId, userId]  
     );
     
     if (result.rowCount > 0) {
       res.status(200).json({ message: 'Note updated successfully', note: result.rows[0] });
     } else {
-      res.status(404).json({ message: 'Note not found' });
+      res.status(404).json({ message: 'Note not found or unauthorized' });
     }
   } catch (err) {
     res.status(500).json({ message: 'Failed to update note', err });
@@ -369,23 +465,37 @@ app.get('/home/pin',authMiddleware,async(req,res)=>{
 
 })
 
-app.put('/home/pin/:id',async(req,res)=>{
+app.put('/home/pin/:id',
+  authMiddleware,
+  [
+    param('id').isInt().withMessage('Invalid note ID'),
+    body('pin').isBoolean().withMessage('Pin must be boolean'),
+  ],
+  validate,
+  async(req,res)=>{
   const noteId = req.params.id;
+  const userId = req.user.userId;
   const {pin } = req.body
   const isPinned = Boolean(pin)
   try {
-    const result = db.query(`UPDATE notes SET pinned = $1 WHERE id =$2 RETURNING *`,[!isPinned,noteId])
+    const result = db.query(`UPDATE notes SET pinned = $1 WHERE id =$2 AND user_id = $3 RETURNING *`,[!isPinned,noteId,userId])
     if((await result).rowCount>0){
       res.status(200).json({message:'Note pinned successfully'})
     }else{
-      res.status(404).json({message:'Note not found'})
+      res.status(404).json({message:'Note not found or unauthorized'})
     }
   } catch (error) {
     res.status(500).json({message:'Failed to pin Note',error})
   }
 })
 
-app.delete('/home/:id',authMiddleware, async (req, res) => {
+app.delete('/home/:id',
+  authMiddleware,
+  [
+    param('id').isInt().withMessage('Invalid note ID'),
+  ],
+  validate,
+  async (req, res) => {
   const noteId = req.params.id;
   const userId = req.user.userId; 
   try {
