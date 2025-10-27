@@ -102,8 +102,8 @@ app.post("/login", async (req, res) => {
             // max age for cookie . after the JWT token expires, even if the cookie persists, the user will need to re-authenticate.
             res.cookie('token', token, {
               httpOnly: true,
-              secure: process.env.NODE_ENV === 'production',
-              sameSite: 'Strict',
+              secure: process.env.NODE_ENV === 'production', // true in production for HTTPS
+              sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax', // 'None' for cross-origin in production
               path: '/',
               maxAge: 7 * 24 * 60 * 60 * 1000, // 1 week
             });
@@ -158,8 +158,10 @@ app.post("/signup", async (req, res) => {
           // Set the token in HTTP-only cookie
           res.cookie("token", token, {
             httpOnly: true,
-            secure: true,
-            maxAge: 3600000,
+            secure: process.env.NODE_ENV === 'production', // true in production for HTTPS
+            sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax', // 'None' for cross-origin in production
+            path: '/',
+            maxAge: 7 * 24 * 60 * 60 * 1000, // 1 week
           });
 
           return res.json({ message: "Signup successful", token });
@@ -304,7 +306,12 @@ app.delete('/home/delete-account',authMiddleware,async(req,res)=>{
     if(result.rowCount>0){
        await db.query('DELETE FROM users WHERE id = $1', [id]);
        // Clear the authentication cookie
-       res.clearCookie("token", { httpOnly: true, secure: process.env.NODE_ENV === 'production' });
+       res.clearCookie("token", { 
+         httpOnly: true, 
+         secure: process.env.NODE_ENV === 'production',
+         sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax',
+         path: '/'
+       });
       res.status(200).json({message:'Account deletion successful',user:result.rows[0]})
     }else{
       res.status(404).json({message:'user not found'})
@@ -496,7 +503,12 @@ app.get("/home/bin", authMiddleware, async (req, res) => {
   }
 });
 app.post("/logout", (req, res) => {
-  res.clearCookie("token", { httpOnly: true, secure: true });
+  res.clearCookie("token", { 
+    httpOnly: true, 
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax',
+    path: '/'
+  });
   return res.status(200).json({ message: 'Logout successful' })
 });
 
